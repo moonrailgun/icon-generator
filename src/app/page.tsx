@@ -456,6 +456,14 @@ export default function Home() {
           <p className="max-w-3xl text-base text-gray-600 dark:text-gray-300">
             Upload a high-resolution asset and instantly preview every macOS icon size, complete with a ready-to-ship .iconset archive and .icns file. Perfect for macOS apps, PWAs, and Electron projects.
           </p>
+          <div className="grid gap-3 text-sm text-gray-500 dark:text-gray-300 sm:grid-cols-2">
+            <p>
+              Designed for Apple’s Human Interface Guidelines: transparent PNGs are wrapped with a subtle white base, highlights, and soft shadow to match official macOS icon styling.
+            </p>
+            <p>
+              Save production time by exporting all 10 required sizes, Retina variants, and the structured `Contents.json` metadata without opening Xcode or command-line tools.
+            </p>
+          </div>
         </header>
 
         <section className="grid gap-12 lg:grid-cols-[360px_1fr]">
@@ -557,8 +565,8 @@ export default function Home() {
                   aria-disabled={!zipUrl}
                 >
                   Download iconset zip
-                </a>
-                <a
+          </a>
+          <a
                   href={icnsUrl ?? undefined}
                   download={icnsUrl ? downloadIcnsName : undefined}
                   className={`rounded-xl px-4 py-2 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
@@ -569,8 +577,8 @@ export default function Home() {
                   aria-disabled={!icnsUrl}
                 >
                   Download ICNS file
-                </a>
-              </div>
+          </a>
+        </div>
             </div>
 
             <div
@@ -656,7 +664,38 @@ export default function Home() {
             ) : null}
           </div>
         </section>
-      </div>
+
+        <section className="grid gap-10 rounded-3xl border border-gray-200 bg-white/70 p-8 text-sm text-gray-600 shadow-lg dark:border-white/10 dark:bg-white/5 dark:text-gray-300">
+            <div className="grid gap-6 md:grid-cols-2">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Why use this macOS icon generator?</h2>
+                <ul className="mt-3 space-y-2 list-disc pl-5">
+                  <li>No installation—everything runs in your browser.</li>
+                  <li>Mac-ready assets including `.iconset` + `.icns` in seconds.</li>
+                  <li>Consistent Retina previews aligned with Apple’s template.</li>
+                  <li>Ideal for indie developers, designers, and rapid prototyping.</li>
+                </ul>
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Frequently asked questions</h2>
+                <div className="mt-3 space-y-2">
+                  <p className="font-medium text-gray-800 dark:text-gray-100">What input formats are supported?</p>
+                  <p>Any image the browser can read—PNG, JPEG, SVG, WebP, even HEIC if your browser supports it.</p>
+                  <p className="font-medium text-gray-800 dark:text-gray-100">Is my image uploaded to a server?</p>
+                  <p>Processing happens locally via Canvas APIs; nothing leaves your device, keeping assets private.</p>
+                  <p className="font-medium text-gray-800 dark:text-gray-100">Can I customize the background?</p>
+                  <p>Currently the generator follows Apple’s white rounded template. Custom backgrounds are on the roadmap.</p>
+                </div>
+              </div>
+            </div>
+            <div className="rounded-2xl bg-gradient-to-br from-indigo-500 via-indigo-600 to-indigo-700 p-6 text-white shadow-xl">
+              <h3 className="text-lg font-semibold">Need other platforms?</h3>
+              <p className="mt-2 text-sm text-indigo-100">
+                Extend your workflow with iOS, Android, or web favicon outputs using complementary tools or pipelines. This generator focuses on macOS precision so you can integrate it alongside solutions like AppIcon or custom scripts.
+              </p>
+            </div>
+          </section>
+    </div>
     </main>
   );
 }
