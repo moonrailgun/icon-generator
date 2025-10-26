@@ -25,6 +25,13 @@ interface VariantResult extends VariantConfig {
   dataUrl: string;
   binary: Uint8Array;
   actualSize: number;
+  downloadUrl: string;
+}
+
+function cleanupVariantUrls(variantList: VariantResult[]) {
+  variantList.forEach((variant) => {
+    URL.revokeObjectURL(variant.downloadUrl);
+  });
 }
 
 const ICON_VARIANTS: VariantConfig[] = [
@@ -244,7 +251,9 @@ function drawVariant(image: HTMLImageElement, actualSize: number) {
 
   const dataUrl = canvas.toDataURL("image/png");
   const binary = dataUrlToUint8Array(dataUrl);
-  return { dataUrl, binary };
+  const blob = new Blob([binary.buffer], { type: "image/png" });
+  const downloadUrl = URL.createObjectURL(blob);
+  return { dataUrl, binary, downloadUrl };
 }
 
 function createIcnsBuffer(variants: VariantResult[]): ArrayBuffer {
@@ -348,6 +357,12 @@ export default function Home() {
     };
   }, []);
 
+  useEffect(() => {
+    return () => {
+      cleanupVariantUrls(variants);
+    };
+  }, [variants]);
+
   const updateZipUrl = useCallback((blob: Blob) => {
     const objectUrl = URL.createObjectURL(blob);
     if (zipUrlRef.current) {
@@ -370,7 +385,10 @@ export default function Home() {
     async (file: File) => {
       setIsProcessing(true);
       setError(null);
-      setVariants([]);
+      setVariants((previous) => {
+        cleanupVariantUrls(previous);
+        return [];
+      });
       setSourcePreview(null);
       revokeZipUrl();
       revokeIcnsUrl();
@@ -384,20 +402,25 @@ export default function Home() {
           try {
             const generated = ICON_VARIANTS.map((config) => {
               const actualSize = config.size * config.scale;
-              const { dataUrl: variantUrl, binary } = drawVariant(
-                image,
-                actualSize,
-              );
+              const {
+                dataUrl: variantUrl,
+                binary,
+                downloadUrl,
+              } = drawVariant(image, actualSize);
               return {
                 ...config,
                 actualSize,
                 dataUrl: variantUrl,
                 binary,
+                downloadUrl,
               } satisfies VariantResult;
             });
 
             setSourcePreview(dataUrl);
-            setVariants(generated);
+            setVariants((previous) => {
+              cleanupVariantUrls(previous);
+              return generated;
+            });
             const name = file.name.replace(/\.[^/.]+$/, "");
             setBaseName(name.length > 0 ? name : "AppIcon");
 
@@ -418,7 +441,10 @@ export default function Home() {
             updateIcnsUrl(icnsBlob);
           } catch (exception) {
             console.error(exception);
-            setVariants([]);
+            setVariants((previous) => {
+              cleanupVariantUrls(previous);
+              return [];
+            });
             setSourcePreview(null);
             revokeZipUrl();
             revokeIcnsUrl();
@@ -446,6 +472,16 @@ export default function Home() {
     },
     [revokeIcnsUrl, revokeZipUrl, updateIcnsUrl, updateZipUrl],
   );
+
+  const handleDownloadVariant = useCallback((variant: VariantResult) => {
+    const anchor = document.createElement("a");
+    anchor.href = variant.downloadUrl;
+    anchor.download = variant.filename;
+    anchor.style.display = "none";
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+  }, []);
 
   const handleFiles = useCallback(
     (files: FileList | null) => {
@@ -737,14 +773,14 @@ export default function Home() {
                         )}
                       </div>
                       {variant ? (
-                        <a
-                          href={variant.dataUrl}
-                          download={variant.filename}
+                        <button
+                          type="button"
+                          onClick={() => handleDownloadVariant(variant)}
                           data-tianji-event={`download-variant-${config.id}`}
-                          className="text-[11px] font-medium text-indigo-500 hover:text-indigo-600 dark:text-indigo-300 dark:hover:text-indigo-200"
+                          className="text-[11px] font-medium text-indigo-500 hover:text-indigo-600 dark:text-indigo-300 dark:hover:text-indigo-200 cursor-pointer"
                         >
                           Download this size
-                        </a>
+                        </button>
                       ) : null}
                     </div>
                   </div>
