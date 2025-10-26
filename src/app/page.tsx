@@ -1,6 +1,7 @@
 "use client";
 
 import JSZip from "jszip";
+import Image from "next/image";
 import {
   type ChangeEvent,
   type DragEvent,
@@ -145,7 +146,12 @@ function drawRoundedRectPath(
   context.lineTo(x + width - clampedRadius, y);
   context.quadraticCurveTo(x + width, y, x + width, y + clampedRadius);
   context.lineTo(x + width, y + height - clampedRadius);
-  context.quadraticCurveTo(x + width, y + height, x + width - clampedRadius, y + height);
+  context.quadraticCurveTo(
+    x + width,
+    y + height,
+    x + width - clampedRadius,
+    y + height,
+  );
   context.lineTo(x + clampedRadius, y + height);
   context.quadraticCurveTo(x, y + height, x, y + height - clampedRadius);
   context.lineTo(x, y + clampedRadius);
@@ -171,20 +177,37 @@ function drawVariant(image: HTMLImageElement, actualSize: number) {
   context.shadowBlur = actualSize * 0.06;
   context.shadowOffsetY = actualSize * 0.02;
   context.beginPath();
-  drawRoundedRectPath(context, outerPadding, outerPadding, baseSize, baseSize, baseRadius);
+  drawRoundedRectPath(
+    context,
+    outerPadding,
+    outerPadding,
+    baseSize,
+    baseSize,
+    baseRadius,
+  );
   context.fillStyle = "#FFFFFF";
   context.fill();
   context.restore();
 
   context.save();
   context.beginPath();
-  drawRoundedRectPath(context, outerPadding, outerPadding, baseSize, baseSize, baseRadius);
+  drawRoundedRectPath(
+    context,
+    outerPadding,
+    outerPadding,
+    baseSize,
+    baseSize,
+    baseRadius,
+  );
   context.clip();
 
   const innerPadding = Math.round(baseSize * 0.12);
   const availableWidth = baseSize - innerPadding * 2;
   const availableHeight = baseSize - innerPadding * 2;
-  const scale = Math.min(availableWidth / image.width, availableHeight / image.height);
+  const scale = Math.min(
+    availableWidth / image.width,
+    availableHeight / image.height,
+  );
   const drawWidth = image.width * scale;
   const drawHeight = image.height * scale;
   const offsetX = outerPadding + (baseSize - drawWidth) / 2;
@@ -192,7 +215,12 @@ function drawVariant(image: HTMLImageElement, actualSize: number) {
 
   context.drawImage(image, offsetX, offsetY, drawWidth, drawHeight);
 
-  const highlight = context.createLinearGradient(0, outerPadding, 0, outerPadding + baseSize);
+  const highlight = context.createLinearGradient(
+    0,
+    outerPadding,
+    0,
+    outerPadding + baseSize,
+  );
   highlight.addColorStop(0, "rgba(255, 255, 255, 0.55)");
   highlight.addColorStop(0.5, "rgba(255, 255, 255, 0)");
   highlight.addColorStop(1, "rgba(148, 163, 184, 0.25)");
@@ -202,7 +230,14 @@ function drawVariant(image: HTMLImageElement, actualSize: number) {
   context.restore();
 
   context.beginPath();
-  drawRoundedRectPath(context, outerPadding, outerPadding, baseSize, baseSize, baseRadius);
+  drawRoundedRectPath(
+    context,
+    outerPadding,
+    outerPadding,
+    baseSize,
+    baseSize,
+    baseRadius,
+  );
   context.strokeStyle = "rgba(148, 163, 184, 0.25)";
   context.lineWidth = Math.max(actualSize * 0.012, 1);
   context.stroke();
@@ -226,7 +261,8 @@ function createIcnsBuffer(variants: VariantResult[]): ArrayBuffer {
     .map(([size, data]) => ({ type: ICNS_TYPE_MAP[size], data, size }))
     .sort((a, b) => a.size - b.size);
 
-  const totalLength = 8 + entries.reduce((sum, entry) => sum + 8 + entry.data.length, 0);
+  const totalLength =
+    8 + entries.reduce((sum, entry) => sum + 8 + entry.data.length, 0);
   const buffer = new ArrayBuffer(totalLength);
   const view = new DataView(buffer);
   const header = new Uint8Array(buffer, 0, 4);
@@ -312,29 +348,23 @@ export default function Home() {
     };
   }, []);
 
-  const updateZipUrl = useCallback(
-    (blob: Blob) => {
-      const objectUrl = URL.createObjectURL(blob);
-      if (zipUrlRef.current) {
-        URL.revokeObjectURL(zipUrlRef.current);
-      }
-      zipUrlRef.current = objectUrl;
-      setZipUrl(objectUrl);
-    },
-    [],
-  );
+  const updateZipUrl = useCallback((blob: Blob) => {
+    const objectUrl = URL.createObjectURL(blob);
+    if (zipUrlRef.current) {
+      URL.revokeObjectURL(zipUrlRef.current);
+    }
+    zipUrlRef.current = objectUrl;
+    setZipUrl(objectUrl);
+  }, []);
 
-  const updateIcnsUrl = useCallback(
-    (blob: Blob) => {
-      const objectUrl = URL.createObjectURL(blob);
-      if (icnsUrlRef.current) {
-        URL.revokeObjectURL(icnsUrlRef.current);
-      }
-      icnsUrlRef.current = objectUrl;
-      setIcnsUrl(objectUrl);
-    },
-    [],
-  );
+  const updateIcnsUrl = useCallback((blob: Blob) => {
+    const objectUrl = URL.createObjectURL(blob);
+    if (icnsUrlRef.current) {
+      URL.revokeObjectURL(icnsUrlRef.current);
+    }
+    icnsUrlRef.current = objectUrl;
+    setIcnsUrl(objectUrl);
+  }, []);
 
   const processImage = useCallback(
     async (file: File) => {
@@ -349,12 +379,15 @@ export default function Home() {
 
       reader.onload = () => {
         const dataUrl = reader.result as string;
-        const image = new Image();
+        const image = new window.Image();
         image.onload = async () => {
           try {
             const generated = ICON_VARIANTS.map((config) => {
               const actualSize = config.size * config.scale;
-              const { dataUrl: variantUrl, binary } = drawVariant(image, actualSize);
+              const { dataUrl: variantUrl, binary } = drawVariant(
+                image,
+                actualSize,
+              );
               return {
                 ...config,
                 actualSize,
@@ -389,14 +422,18 @@ export default function Home() {
             setSourcePreview(null);
             revokeZipUrl();
             revokeIcnsUrl();
-            setError("Something went wrong while generating icons. Please try another image.");
+            setError(
+              "Something went wrong while generating icons. Please try another image.",
+            );
           } finally {
             setIsProcessing(false);
           }
         };
         image.onerror = () => {
           setIsProcessing(false);
-          setError("Unable to read the image. Please confirm the file is not corrupted.");
+          setError(
+            "Unable to read the image. Please confirm the file is not corrupted.",
+          );
         };
         image.src = dataUrl;
       };
@@ -442,26 +479,37 @@ export default function Home() {
     [handleFiles],
   );
 
-  const downloadZipName = useMemo(() => `${baseName}-macos-iconset.zip`, [baseName]);
+  const downloadZipName = useMemo(
+    () => `${baseName}-macos-iconset.zip`,
+    [baseName],
+  );
   const downloadIcnsName = useMemo(() => `${baseName}.icns`, [baseName]);
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,_#f2f5ff,_#eef2ff,_#ffffff)] dark:bg-[radial-gradient(circle_at_top,_#070a12,_#0d101b,_#111827)]">
       <div className="mx-auto flex max-w-6xl flex-col gap-12 px-6 pb-20 pt-16 text-foreground">
         <header className="space-y-4 text-center sm:text-left">
-          <p className="text-sm font-medium uppercase tracking-[0.3em] text-indigo-500">macOS Icon Studio</p>
+          <p className="text-sm font-medium uppercase tracking-[0.3em] text-indigo-500">
+            macOS Icon Studio
+          </p>
           <h1 className="text-4xl font-semibold text-gray-900 dark:text-gray-50 sm:text-5xl">
             Generate polished macOS app icons in one step
           </h1>
           <p className="max-w-3xl text-base text-gray-600 dark:text-gray-300">
-            Upload a high-resolution asset and instantly preview every macOS icon size, complete with a ready-to-ship .iconset archive and .icns file. Perfect for macOS apps, PWAs, and Electron projects.
+            Upload a high-resolution asset and instantly preview every macOS
+            icon size, complete with a ready-to-ship .iconset archive and .icns
+            file. Perfect for macOS apps, PWAs, and Electron projects.
           </p>
           <div className="grid gap-3 text-sm text-gray-500 dark:text-gray-300 sm:grid-cols-2">
             <p>
-              Designed for Apple’s Human Interface Guidelines: transparent PNGs are wrapped with a subtle white base, highlights, and soft shadow to match official macOS icon styling.
+              Designed for Apple’s Human Interface Guidelines: transparent PNGs
+              are wrapped with a subtle white base, highlights, and soft shadow
+              to match official macOS icon styling.
             </p>
             <p>
-              Save production time by exporting all 10 required sizes, Retina variants, and the structured `Contents.json` metadata without opening Xcode or command-line tools.
+              Save production time by exporting all 10 required sizes, Retina
+              variants, and the structured `Contents.json` metadata without
+              opening Xcode or command-line tools.
             </p>
           </div>
         </header>
@@ -484,7 +532,13 @@ export default function Home() {
               }`}
             >
               <div className="flex h-14 w-14 items-center justify-center rounded-full bg-indigo-500/10 text-indigo-500 dark:bg-indigo-500/20 dark:text-indigo-300">
-                <svg viewBox="0 0 24 24" className="h-8 w-8">
+                <svg
+                  viewBox="0 0 24 24"
+                  className="h-8 w-8"
+                  role="img"
+                  aria-labelledby="upload-icon-title"
+                >
+                  <title id="upload-icon-title">Upload icon</title>
                   <path
                     fill="currentColor"
                     d="M12 3a4 4 0 0 1 4 4v1h1.5A3.5 3.5 0 0 1 21 11.5a3.5 3.5 0 0 1-3 3.465V16a2 2 0 0 1-2 2h-1v-2h1a.5.5 0 0 0 .5-.5V14h1.5a1.5 1.5 0 0 0 0-3H16V9a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2H6.5a1.5 1.5 0 0 0 0 3H8v1.5a.5.5 0 0 0 .5.5h1v2h-1a2 2 0 0 1-2-2v-1.035a3.5 3.5 0 0 1-3-3.465A3.5 3.5 0 0 1 6.5 8H8V7a4 4 0 0 1 4-4Zm0 6a1 1 0 0 1 1 1v2h1a1 1 0 0 1 .8 1.6l-2.5 3.5a1 1 0 0 1-1.6 0l-2.5-3.5a1 1 0 0 1 .8-1.6h1V10a1 1 0 0 1 1-1Z"
@@ -496,7 +550,8 @@ export default function Home() {
                   Click to choose or drop an image here
                 </span>
                 <span className="text-xs text-gray-500 dark:text-gray-400">
-                  Transparent PNG or SVG recommended, ideally 1024 × 1024 or larger
+                  Transparent PNG or SVG recommended, ideally 1024 × 1024 or
+                  larger
                 </span>
               </div>
               <input
@@ -526,10 +581,19 @@ export default function Home() {
 
             {sourcePreview ? (
               <div className="space-y-3 rounded-2xl border border-gray-200 bg-white/70 p-4 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/10">
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-200">Source image preview</p>
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                  Source image preview
+                </p>
                 <div className="flex items-center gap-4">
                   <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl border border-gray-200 bg-white shadow-inner dark:border-white/10 dark:bg-white/10">
-                    <img src={sourcePreview} alt="Source image preview" className="h-full w-full object-cover" />
+                    <Image
+                      src={sourcePreview}
+                      alt="Source image preview"
+                      width={56}
+                      height={56}
+                      className="h-full w-full object-cover"
+                      unoptimized
+                    />
                   </div>
                   <div className="text-xs text-gray-500 dark:text-gray-400">
                     <p>File name: {baseName}</p>
@@ -550,7 +614,9 @@ export default function Home() {
           <div className="space-y-8">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-50">Icon sizes preview</h2>
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-50">
+                  Icon sizes preview
+                </h2>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   {ICON_VARIANTS.length} sizes with live scaling preview
                 </p>
@@ -559,7 +625,9 @@ export default function Home() {
                 <a
                   href={zipUrl ?? undefined}
                   download={zipUrl ? downloadZipName : undefined}
-                  data-tianji-event={zipUrl ? "download-iconset-zip" : undefined}
+                  data-tianji-event={
+                    zipUrl ? "download-iconset-zip" : undefined
+                  }
                   className={`rounded-xl px-4 py-2 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
                     zipUrl
                       ? "bg-indigo-500 text-white shadow-lg shadow-indigo-200 hover:bg-indigo-600 dark:bg-indigo-500/80"
@@ -568,8 +636,8 @@ export default function Home() {
                   aria-disabled={!zipUrl}
                 >
                   Download iconset zip
-          </a>
-          <a
+                </a>
+                <a
                   href={icnsUrl ?? undefined}
                   download={icnsUrl ? downloadIcnsName : undefined}
                   data-tianji-event={icnsUrl ? "download-icns" : undefined}
@@ -581,8 +649,8 @@ export default function Home() {
                   aria-disabled={!icnsUrl}
                 >
                   Download ICNS file
-          </a>
-        </div>
+                </a>
+              </div>
             </div>
 
             <div
@@ -611,8 +679,16 @@ export default function Home() {
                   : isLarge
                     ? "sm:col-span-2 lg:col-span-2"
                     : "";
-                const tilePaddingClass = isHuge ? "p-6" : isLarge ? "p-5" : "p-4";
-                const stagePaddingClass = isHuge ? "min-h-48 p-8" : isLarge ? "min-h-36 p-6" : "min-h-28 p-5";
+                const tilePaddingClass = isHuge
+                  ? "p-6"
+                  : isLarge
+                    ? "p-5"
+                    : "p-4";
+                const stagePaddingClass = isHuge
+                  ? "min-h-48 p-8"
+                  : isLarge
+                    ? "min-h-36 p-6"
+                    : "min-h-28 p-5";
 
                 return (
                   <div
@@ -624,9 +700,13 @@ export default function Home() {
                         <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">
                           {config.label}
                         </span>
-                        <span className="text-xs text-gray-400 dark:text-gray-500">{config.scale}x</span>
+                        <span className="text-xs text-gray-400 dark:text-gray-500">
+                          {config.scale}x
+                        </span>
                       </div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">{config.description}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {config.description}
+                      </p>
                     </div>
                     <div
                       className={`relative flex flex-1 flex-col items-center justify-center gap-4 rounded-2xl bg-gradient-to-br from-slate-50 via-white to-slate-100 shadow-inner dark:from-white/10 dark:via-white/5 dark:to-white/10 ${stagePaddingClass}`}
@@ -636,14 +716,24 @@ export default function Home() {
                         style={{ width: displaySize, height: displaySize }}
                       >
                         {variant ? (
-                          <img
+                          <Image
                             src={variant.dataUrl}
                             alt={`${config.label} preview`}
-                            style={{ width: actualSize, height: actualSize }}
+                            width={actualSize}
+                            height={actualSize}
                             className="object-contain"
+                            style={{
+                              width: actualSize,
+                              height: actualSize,
+                              maxWidth: "100%",
+                              maxHeight: "100%",
+                            }}
+                            unoptimized
                           />
                         ) : (
-                          <span className="text-[11px] text-gray-400 dark:text-gray-500">Waiting for image</span>
+                          <span className="text-[11px] text-gray-400 dark:text-gray-500">
+                            Waiting for image
+                          </span>
                         )}
                       </div>
                       {variant ? (
@@ -664,43 +754,72 @@ export default function Home() {
 
             {!hasResult ? (
               <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50/60 p-6 text-sm text-gray-500 dark:border-white/10 dark:bg-white/5 dark:text-gray-400">
-                Upload an image to see previews for every size and quick download options.
+                Upload an image to see previews for every size and quick
+                download options.
               </div>
             ) : null}
           </div>
         </section>
 
         <section className="grid gap-10 rounded-3xl border border-gray-200 bg-white/70 p-8 text-sm text-gray-600 shadow-lg dark:border-white/10 dark:bg-white/5 dark:text-gray-300">
-            <div className="grid gap-6 md:grid-cols-2">
-              <div>
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Why use this macOS icon generator?</h2>
-                <ul className="mt-3 space-y-2 list-disc pl-5">
-                  <li>No installation—everything runs in your browser.</li>
-                  <li>Mac-ready assets including `.iconset` + `.icns` in seconds.</li>
-                  <li>Consistent Retina previews aligned with Apple’s template.</li>
-                  <li>Ideal for indie developers, designers, and rapid prototyping.</li>
-                </ul>
-              </div>
-              <div>
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Frequently asked questions</h2>
-                <div className="mt-3 space-y-2">
-                  <p className="font-medium text-gray-800 dark:text-gray-100">What input formats are supported?</p>
-                  <p>Any image the browser can read—PNG, JPEG, SVG, WebP, even HEIC if your browser supports it.</p>
-                  <p className="font-medium text-gray-800 dark:text-gray-100">Is my image uploaded to a server?</p>
-                  <p>Processing happens locally via Canvas APIs; nothing leaves your device, keeping assets private.</p>
-                  <p className="font-medium text-gray-800 dark:text-gray-100">Can I customize the background?</p>
-                  <p>Currently the generator follows Apple’s white rounded template. Custom backgrounds are on the roadmap.</p>
-                </div>
+          <div className="grid gap-6 md:grid-cols-2">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                Why use this macOS icon generator?
+              </h2>
+              <ul className="mt-3 space-y-2 list-disc pl-5">
+                <li>No installation—everything runs in your browser.</li>
+                <li>
+                  Mac-ready assets including `.iconset` + `.icns` in seconds.
+                </li>
+                <li>
+                  Consistent Retina previews aligned with Apple’s template.
+                </li>
+                <li>
+                  Ideal for indie developers, designers, and rapid prototyping.
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                Frequently asked questions
+              </h2>
+              <div className="mt-3 space-y-2">
+                <p className="font-medium text-gray-800 dark:text-gray-100">
+                  What input formats are supported?
+                </p>
+                <p>
+                  Any image the browser can read—PNG, JPEG, SVG, WebP, even HEIC
+                  if your browser supports it.
+                </p>
+                <p className="font-medium text-gray-800 dark:text-gray-100">
+                  Is my image uploaded to a server?
+                </p>
+                <p>
+                  Processing happens locally via Canvas APIs; nothing leaves
+                  your device, keeping assets private.
+                </p>
+                <p className="font-medium text-gray-800 dark:text-gray-100">
+                  Can I customize the background?
+                </p>
+                <p>
+                  Currently the generator follows Apple’s white rounded
+                  template. Custom backgrounds are on the roadmap.
+                </p>
               </div>
             </div>
-            <div className="rounded-2xl bg-gradient-to-br from-indigo-500 via-indigo-600 to-indigo-700 p-6 text-white shadow-xl">
-              <h3 className="text-lg font-semibold">Need other platforms?</h3>
-              <p className="mt-2 text-sm text-indigo-100">
-                Extend your workflow with iOS, Android, or web favicon outputs using complementary tools or pipelines. This generator focuses on macOS precision so you can integrate it alongside solutions like AppIcon or custom scripts.
-              </p>
-            </div>
-          </section>
-    </div>
+          </div>
+          <div className="rounded-2xl bg-gradient-to-br from-indigo-500 via-indigo-600 to-indigo-700 p-6 text-white shadow-xl">
+            <h3 className="text-lg font-semibold">Need other platforms?</h3>
+            <p className="mt-2 text-sm text-indigo-100">
+              Extend your workflow with iOS, Android, or web favicon outputs
+              using complementary tools or pipelines. This generator focuses on
+              macOS precision so you can integrate it alongside solutions like
+              AppIcon or custom scripts.
+            </p>
+          </div>
+        </section>
+      </div>
     </main>
   );
 }
