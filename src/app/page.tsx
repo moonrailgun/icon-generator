@@ -470,6 +470,7 @@ export default function Home() {
           <div className="space-y-6">
             <label
               htmlFor="icon-upload"
+              data-tianji-event="open-upload-dropzone"
               onDragOver={(event) => {
                 event.preventDefault();
                 setIsDragging(true);
@@ -511,6 +512,7 @@ export default function Home() {
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
+              data-tianji-event="trigger-file-picker"
               className="w-full rounded-xl bg-indigo-500 px-4 py-3 text-sm font-medium text-white shadow-lg shadow-indigo-200 transition hover:bg-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:bg-indigo-500/80 dark:text-white"
             >
               {isProcessing ? "Processing image..." : "Choose a local file"}
@@ -557,6 +559,7 @@ export default function Home() {
                 <a
                   href={zipUrl ?? undefined}
                   download={zipUrl ? downloadZipName : undefined}
+                  data-tianji-event={zipUrl ? "download-iconset-zip" : undefined}
                   className={`rounded-xl px-4 py-2 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
                     zipUrl
                       ? "bg-indigo-500 text-white shadow-lg shadow-indigo-200 hover:bg-indigo-600 dark:bg-indigo-500/80"
@@ -569,6 +572,7 @@ export default function Home() {
           <a
                   href={icnsUrl ?? undefined}
                   download={icnsUrl ? downloadIcnsName : undefined}
+                  data-tianji-event={icnsUrl ? "download-icns" : undefined}
                   className={`rounded-xl px-4 py-2 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
                     icnsUrl
                       ? "bg-gray-900 text-white shadow-lg shadow-gray-300 hover:bg-black dark:bg-white/20 dark:text-white"
@@ -646,6 +650,7 @@ export default function Home() {
                         <a
                           href={variant.dataUrl}
                           download={variant.filename}
+                          data-tianji-event={`download-variant-${config.id}`}
                           className="text-[11px] font-medium text-indigo-500 hover:text-indigo-600 dark:text-indigo-300 dark:hover:text-indigo-200"
                         >
                           Download this size
