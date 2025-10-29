@@ -18,13 +18,13 @@ const siteUrl = new URL("https://icon.msgbyte.com");
 export const metadata: Metadata = {
   metadataBase: siteUrl,
   title: {
-    default: "macOS Icon Generator | Online macOS App Icon Tool",
-    template: "%s | macOS Icon Generator",
+    default: "MacOS Icon Generator | Online MacOS App Icon Tool",
+    template: "%s | MacOS Icon Generator",
   },
   description:
-    "Upload artwork and instantly export a full macOS iconset, Retina-ready PNGs, and ICNS files directly in the browser.",
+    "Upload artwork and instantly export a full MacOS iconset, Retina-ready PNGs, and ICNS files directly in the browser.",
   keywords: [
-    "macOS icon generator",
+    "MacOS icon generator",
     "mac app icon",
     "icns converter",
     "app icon maker",
@@ -39,18 +39,18 @@ export const metadata: Metadata = {
     follow: true,
   },
   openGraph: {
-    title: "macOS Icon Generator | Export macOS Icons Online",
+    title: "MacOS Icon Generator | Export MacOS Icons Online",
     description:
-      "Create professional macOS app icons online. Generate .iconset bundles, ICNS files, and Retina PNG previews in seconds.",
+      "Create professional MacOS app icons online. Generate .iconset bundles, ICNS files, and Retina PNG previews in seconds.",
     url: siteUrl,
-    siteName: "macOS Icon Generator",
+    siteName: "MacOS Icon Generator",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "macOS Icon Generator",
+    title: "MacOS Icon Generator",
     description:
-      "Generate macOS app icons, Retina assets, and ICNS files right in your browser.",
+      "Generate MacOS app icons, Retina assets, and ICNS files right in your browser.",
   },
 };
 
@@ -72,18 +72,18 @@ export default function RootLayout({
           {JSON.stringify({
             "@context": "https://schema.org",
             "@type": "SoftwareApplication",
-            name: "macOS Icon Generator",
+            name: "MacOS Icon Generator",
             url: siteUrl.href,
             applicationCategory: "DesignApplication",
-            operatingSystem: "macOS",
+            operatingSystem: "MacOS",
             description:
-              "Online macOS icon generator that exports iconset zips, ICNS files, and Retina-ready PNG previews.",
+              "Online MacOS icon generator that exports iconset zips, ICNS files, and Retina-ready PNG previews.",
             offers: {
               "@type": "Offer",
               price: "0",
               priceCurrency: "USD",
             },
-            keywords: "macOS icon generator, ICNS converter, mac app icon maker",
+            keywords: "MacOS icon generator, ICNS converter, mac app icon maker",
           })}
         </Script>
       </head>

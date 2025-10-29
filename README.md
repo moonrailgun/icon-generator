@@ -1,10 +1,10 @@
-# macOS Icon Generator
+# MacOS Icon Generator
 
-Generate a complete macOS iconset directly in the browser. Upload a single high-resolution image, review how it renders across every required size, then download both a `.iconset` bundle and an `.icns` file ready for use in macOS apps, PWAs, or Electron projects.
+Generate a complete MacOS iconset directly in the browser. Upload a single high-resolution image, review how it renders across every required size, then download both a `.iconset` bundle and an `.icns` file ready for use in MacOS apps, PWAs, or Electron projects.
 
 ## Features
 - **Drag-and-drop upload**: Supports PNG, JPEG, SVG, and other common image formats.
-- **macOS-specific layout**: Automatically composites a rounded white backdrop with highlights and shadow to match the official template.
+- **MacOS-specific layout**: Automatically composites a rounded white backdrop with highlights and shadow to match the official template.
 - **Full size coverage**: Exports 10 PNG variants from `16×16` up to `1024×1024` (Retina), including menu bar, Dock, Finder, and App Store sizes.
 - **One-click downloads**:
   - `AppIcon.iconset` directory packaged as a zip (with `Contents.json`).
@@ -43,7 +43,7 @@ npm run start
 
 ## Usage
 1. Launch the site and drag an image onto the upload card (or click to choose a file).
-2. Wait for processing—previews will populate for every macOS size.
+2. Wait for processing—previews will populate for every MacOS size.
 3. Download:
    - **Iconset zip**: Contains all PNG variants + `Contents.json`.
    - **ICNS file**: Ready to drop into your app bundle.
@@ -60,7 +60,7 @@ npm run start
 src/
 └── app/
     ├── layout.tsx      # Global metadata, fonts, analytics script
-    ├── page.tsx        # Main macOS icon generator UI & logic
+    ├── page.tsx        # Main MacOS icon generator UI & logic
     └── globals.css     # Tailwind CSS entrypoint & theme vars
 public/
 └── *.svg               # Placeholder assets from the starter template

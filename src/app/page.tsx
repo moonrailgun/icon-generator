@@ -526,21 +526,21 @@ export default function Home() {
       <div className="mx-auto flex max-w-6xl flex-col gap-12 px-6 pb-20 pt-16 text-foreground">
         <header className="space-y-4 text-center sm:text-left">
           <p className="text-sm font-medium uppercase tracking-[0.3em] text-indigo-500">
-            macOS Icon Studio
+            MacOS Icon Studio
           </p>
           <h1 className="text-4xl font-semibold text-gray-900 dark:text-gray-50 sm:text-5xl">
-            Generate polished macOS app icons in one step
+            Generate polished MacOS app icons in one step
           </h1>
           <p className="max-w-3xl text-base text-gray-600 dark:text-gray-300">
-            Upload a high-resolution asset and instantly preview every macOS
+            Upload a high-resolution asset and instantly preview every MacOS
             icon size, complete with a ready-to-ship .iconset archive and .icns
-            file. Perfect for macOS apps, PWAs, and Electron projects.
+            file. Perfect for MacOS apps, PWAs, and Electron projects.
           </p>
           <div className="grid gap-3 text-sm text-gray-500 dark:text-gray-300 sm:grid-cols-2">
             <p>
               Designed for Apple’s Human Interface Guidelines: transparent PNGs
               are wrapped with a subtle white base, highlights, and soft shadow
-              to match official macOS icon styling.
+              to match official MacOS icon styling.
             </p>
             <p>
               Save production time by exporting all 10 required sizes, Retina
@@ -642,8 +642,8 @@ export default function Home() {
             <div className="space-y-3 rounded-2xl border border-transparent bg-indigo-50/70 p-4 text-xs text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-200">
               <p className="font-semibold">What you get</p>
               <p>• Complete AppIcon.iconset archive (with Contents.json)</p>
-              <p>• Standard .icns bundle, ready to drop into macOS</p>
-              <p>• 10 Retina-ready sizes compliant with macOS Sonoma</p>
+              <p>• Standard .icns bundle, ready to drop into MacOS</p>
+              <p>• 10 Retina-ready sizes compliant with MacOS Sonoma</p>
             </div>
           </div>
 
@@ -801,7 +801,7 @@ export default function Home() {
           <div className="grid gap-6 md:grid-cols-2">
             <div>
               <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                Why use this macOS icon generator?
+                Why use this MacOS icon generator?
               </h2>
               <ul className="mt-3 space-y-2 list-disc pl-5">
                 <li>No installation—everything runs in your browser.</li>
@@ -850,7 +850,7 @@ export default function Home() {
             <p className="mt-2 text-sm text-indigo-100">
               Extend your workflow with iOS, Android, or web favicon outputs
               using complementary tools or pipelines. This generator focuses on
-              macOS precision so you can integrate it alongside solutions like
+              MacOS precision so you can integrate it alongside solutions like
               AppIcon or custom scripts.
             </p>
           </div>
