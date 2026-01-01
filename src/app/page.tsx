@@ -127,13 +127,13 @@ const ICNS_TYPE_MAP: Record<number, string> = {
   1024: "ic10",
 };
 
-function dataUrlToUint8Array(dataUrl: string): Uint8Array {
+function dataUrlToUint8Array(dataUrl: string): Uint8Array<ArrayBuffer> {
   const base64 = dataUrl.split(",")[1];
   if (!base64) {
     throw new Error("Unable to parse image data");
   }
   const binary = atob(base64);
-  const result = new Uint8Array(binary.length);
+  const result = new Uint8Array(binary.length) as Uint8Array<ArrayBuffer>;
   for (let index = 0; index < binary.length; index += 1) {
     result[index] = binary.charCodeAt(index);
   }
@@ -251,7 +251,7 @@ function drawVariant(image: HTMLImageElement, actualSize: number) {
 
   const dataUrl = canvas.toDataURL("image/png");
   const binary = dataUrlToUint8Array(dataUrl);
-  const blob = new Blob([binary.buffer], { type: "image/png" });
+  const blob = new Blob([binary], { type: "image/png" });
   const downloadUrl = URL.createObjectURL(blob);
   return { dataUrl, binary, downloadUrl };
 }
