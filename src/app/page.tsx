@@ -473,15 +473,22 @@ export default function Home() {
     [revokeIcnsUrl, revokeZipUrl, updateIcnsUrl, updateZipUrl],
   );
 
-  const handleDownloadVariant = useCallback((variant: VariantResult) => {
+  const triggerDownload = useCallback((url: string, filename: string) => {
     const anchor = document.createElement("a");
-    anchor.href = variant.downloadUrl;
-    anchor.download = variant.filename;
+    anchor.href = url;
+    anchor.download = filename;
     anchor.style.display = "none";
     document.body.appendChild(anchor);
     anchor.click();
     document.body.removeChild(anchor);
   }, []);
+
+  const handleDownloadVariant = useCallback(
+    (variant: VariantResult) => {
+      triggerDownload(variant.downloadUrl, variant.filename);
+    },
+    [triggerDownload],
+  );
 
   const handleFiles = useCallback(
     (files: FileList | null) => {
@@ -664,6 +671,14 @@ export default function Home() {
                   data-tianji-event={
                     zipUrl ? "download-iconset-zip" : undefined
                   }
+                  onClick={(event) => {
+                    if (!zipUrl) {
+                      event.preventDefault();
+                      return;
+                    }
+                    event.preventDefault();
+                    triggerDownload(zipUrl, downloadZipName);
+                  }}
                   className={`rounded-xl px-4 py-2 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
                     zipUrl
                       ? "bg-indigo-500 text-white shadow-lg shadow-indigo-200 hover:bg-indigo-600 dark:bg-indigo-500/80"
@@ -677,6 +692,14 @@ export default function Home() {
                   href={icnsUrl ?? undefined}
                   download={icnsUrl ? downloadIcnsName : undefined}
                   data-tianji-event={icnsUrl ? "download-icns" : undefined}
+                  onClick={(event) => {
+                    if (!icnsUrl) {
+                      event.preventDefault();
+                      return;
+                    }
+                    event.preventDefault();
+                    triggerDownload(icnsUrl, downloadIcnsName);
+                  }}
                   className={`rounded-xl px-4 py-2 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
                     icnsUrl
                       ? "bg-gray-900 text-white shadow-lg shadow-gray-300 hover:bg-black dark:bg-white/20 dark:text-white"
