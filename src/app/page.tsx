@@ -19,6 +19,10 @@ interface VariantConfig {
   size: number;
   scale: 1 | 2;
   filename: string;
+  // ICNS chunk OSType per Apple's iconset convention (see iconutil(1)).
+  // @2x slots use the modern PNG-only types (ic11..ic14, ic10) to avoid the
+  // legacy raw-bitmap interpretation that caused colored-noise rendering.
+  osType: string;
 }
 
 interface VariantResult extends VariantConfig {
@@ -42,6 +46,7 @@ const ICON_VARIANTS: VariantConfig[] = [
     size: 16,
     scale: 1,
     filename: "icon_16x16.png",
+    osType: "icp4",
   },
   {
     id: "16@2",
@@ -50,6 +55,7 @@ const ICON_VARIANTS: VariantConfig[] = [
     size: 16,
     scale: 2,
     filename: "icon_16x16@2x.png",
+    osType: "ic11",
   },
   {
     id: "32",
@@ -58,6 +64,7 @@ const ICON_VARIANTS: VariantConfig[] = [
     size: 32,
     scale: 1,
     filename: "icon_32x32.png",
+    osType: "icp5",
   },
   {
     id: "32@2",
@@ -66,6 +73,7 @@ const ICON_VARIANTS: VariantConfig[] = [
     size: 32,
     scale: 2,
     filename: "icon_32x32@2x.png",
+    osType: "ic12",
   },
   {
     id: "128",
@@ -74,6 +82,7 @@ const ICON_VARIANTS: VariantConfig[] = [
     size: 128,
     scale: 1,
     filename: "icon_128x128.png",
+    osType: "ic07",
   },
   {
     id: "128@2",
@@ -82,6 +91,7 @@ const ICON_VARIANTS: VariantConfig[] = [
     size: 128,
     scale: 2,
     filename: "icon_128x128@2x.png",
+    osType: "ic13",
   },
   {
     id: "256",
@@ -90,6 +100,7 @@ const ICON_VARIANTS: VariantConfig[] = [
     size: 256,
     scale: 1,
     filename: "icon_256x256.png",
+    osType: "ic08",
   },
   {
     id: "256@2",
@@ -98,6 +109,7 @@ const ICON_VARIANTS: VariantConfig[] = [
     size: 256,
     scale: 2,
     filename: "icon_256x256@2x.png",
+    osType: "ic14",
   },
   {
     id: "512",
@@ -106,6 +118,7 @@ const ICON_VARIANTS: VariantConfig[] = [
     size: 512,
     scale: 1,
     filename: "icon_512x512.png",
+    osType: "ic09",
   },
   {
     id: "512@2",
@@ -114,18 +127,9 @@ const ICON_VARIANTS: VariantConfig[] = [
     size: 512,
     scale: 2,
     filename: "icon_512x512@2x.png",
+    osType: "ic10",
   },
 ];
-
-const ICNS_TYPE_MAP: Record<number, string> = {
-  16: "icp4",
-  32: "icp5",
-  64: "icp6",
-  128: "ic07",
-  256: "ic08",
-  512: "ic09",
-  1024: "ic10",
-};
 
 function dataUrlToUint8Array(dataUrl: string): Uint8Array<ArrayBuffer> {
   const base64 = dataUrl.split(",")[1];
@@ -257,18 +261,12 @@ function drawVariant(image: HTMLImageElement, actualSize: number) {
 }
 
 function createIcnsBuffer(variants: VariantResult[]): ArrayBuffer {
-  const unique = new Map<number, Uint8Array>();
-  variants.forEach((variant) => {
-    const targetSize = variant.actualSize;
-    if (!unique.has(targetSize)) {
-      unique.set(targetSize, variant.binary);
-    }
-  });
-
-  const entries = Array.from(unique.entries())
-    .filter(([size]) => Boolean(ICNS_TYPE_MAP[size]))
-    .map(([size, data]) => ({ type: ICNS_TYPE_MAP[size], data, size }))
-    .sort((a, b) => a.size - b.size);
+  // Emit one chunk per variant keyed by its specific OSType.
+  // Do NOT deduplicate by pixel size: 32px / 256px / 512px each map to two
+  // distinct OSTypes (size@1x vs smaller@2x), and the format requires both.
+  const entries = variants
+    .filter((variant) => variant.osType.length === 4)
+    .map((variant) => ({ type: variant.osType, data: variant.binary }));
 
   const totalLength =
     8 + entries.reduce((sum, entry) => sum + 8 + entry.data.length, 0);
