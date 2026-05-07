@@ -435,7 +435,9 @@ export default function Home() {
             updateZipUrl(zipBlob);
 
             const icnsBuffer = createIcnsBuffer(generated);
-            const icnsBlob = new Blob([icnsBuffer], { type: "image/icns" });
+            const icnsBlob = new Blob([icnsBuffer], {
+              type: "application/octet-stream",
+            });
             updateIcnsUrl(icnsBlob);
           } catch (exception) {
             console.error(exception);
@@ -663,18 +665,14 @@ export default function Home() {
                 </p>
               </div>
               <div className="flex flex-wrap gap-3">
-                <a
-                  href={zipUrl ?? undefined}
-                  download={zipUrl ? downloadZipName : undefined}
+                <button
+                  type="button"
+                  disabled={!zipUrl}
                   data-tianji-event={
                     zipUrl ? "download-iconset-zip" : undefined
                   }
-                  onClick={(event) => {
-                    if (!zipUrl) {
-                      event.preventDefault();
-                      return;
-                    }
-                    event.preventDefault();
+                  onClick={() => {
+                    if (!zipUrl) return;
                     triggerDownload(zipUrl, downloadZipName);
                   }}
                   className={`rounded-xl px-4 py-2 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
@@ -682,20 +680,15 @@ export default function Home() {
                       ? "bg-indigo-500 text-white shadow-lg shadow-indigo-200 hover:bg-indigo-600 dark:bg-indigo-500/80"
                       : "cursor-not-allowed bg-gray-200 text-gray-500 dark:bg-white/10 dark:text-gray-500"
                   }`}
-                  aria-disabled={!zipUrl}
                 >
                   Download iconset zip
-                </a>
-                <a
-                  href={icnsUrl ?? undefined}
-                  download={icnsUrl ? downloadIcnsName : undefined}
+                </button>
+                <button
+                  type="button"
+                  disabled={!icnsUrl}
                   data-tianji-event={icnsUrl ? "download-icns" : undefined}
-                  onClick={(event) => {
-                    if (!icnsUrl) {
-                      event.preventDefault();
-                      return;
-                    }
-                    event.preventDefault();
+                  onClick={() => {
+                    if (!icnsUrl) return;
                     triggerDownload(icnsUrl, downloadIcnsName);
                   }}
                   className={`rounded-xl px-4 py-2 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
@@ -703,10 +696,9 @@ export default function Home() {
                       ? "bg-gray-900 text-white shadow-lg shadow-gray-300 hover:bg-black dark:bg-white/20 dark:text-white"
                       : "cursor-not-allowed bg-gray-200 text-gray-500 dark:bg-white/10 dark:text-gray-500"
                   }`}
-                  aria-disabled={!icnsUrl}
                 >
                   Download ICNS file
-                </a>
+                </button>
               </div>
             </div>
 
