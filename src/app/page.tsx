@@ -169,7 +169,15 @@ function drawRoundedRectPath(
   context.quadraticCurveTo(x, y, x + clampedRadius, y);
 }
 
-function drawVariant(image: HTMLImageElement, actualSize: number) {
+interface DrawVariantOptions {
+  showHighlight: boolean;
+}
+
+function drawVariant(
+  image: HTMLImageElement,
+  actualSize: number,
+  options: DrawVariantOptions,
+) {
   const canvas = document.createElement("canvas");
   canvas.width = actualSize;
   canvas.height = actualSize;
@@ -212,13 +220,7 @@ function drawVariant(image: HTMLImageElement, actualSize: number) {
   );
   context.clip();
 
-  const innerPadding = Math.round(baseSize * 0.12);
-  const availableWidth = baseSize - innerPadding * 2;
-  const availableHeight = baseSize - innerPadding * 2;
-  const scale = Math.min(
-    availableWidth / image.width,
-    availableHeight / image.height,
-  );
+  const scale = Math.min(baseSize / image.width, baseSize / image.height);
   const drawWidth = image.width * scale;
   const drawHeight = image.height * scale;
   const offsetX = outerPadding + (baseSize - drawWidth) / 2;
@@ -226,17 +228,19 @@ function drawVariant(image: HTMLImageElement, actualSize: number) {
 
   context.drawImage(image, offsetX, offsetY, drawWidth, drawHeight);
 
-  const highlight = context.createLinearGradient(
-    0,
-    outerPadding,
-    0,
-    outerPadding + baseSize,
-  );
-  highlight.addColorStop(0, "rgba(255, 255, 255, 0.55)");
-  highlight.addColorStop(0.5, "rgba(255, 255, 255, 0)");
-  highlight.addColorStop(1, "rgba(148, 163, 184, 0.25)");
-  context.fillStyle = highlight;
-  context.fillRect(outerPadding, outerPadding, baseSize, baseSize);
+  if (options.showHighlight) {
+    const highlight = context.createLinearGradient(
+      0,
+      outerPadding,
+      0,
+      outerPadding + baseSize,
+    );
+    highlight.addColorStop(0, "rgba(255, 255, 255, 0.55)");
+    highlight.addColorStop(0.5, "rgba(255, 255, 255, 0)");
+    highlight.addColorStop(1, "rgba(148, 163, 184, 0.25)");
+    context.fillStyle = highlight;
+    context.fillRect(outerPadding, outerPadding, baseSize, baseSize);
+  }
 
   context.restore();
 
@@ -315,6 +319,7 @@ export default function Home() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const zipUrlRef = useRef<string | null>(null);
   const icnsUrlRef = useRef<string | null>(null);
+  const sourceImageRef = useRef<HTMLImageElement | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -323,6 +328,12 @@ export default function Home() {
   const [zipUrl, setZipUrl] = useState<string | null>(null);
   const [icnsUrl, setIcnsUrl] = useState<string | null>(null);
   const [baseName, setBaseName] = useState("AppIcon");
+  const [showHighlight, setShowHighlight] = useState(true);
+  const showHighlightRef = useRef(showHighlight);
+
+  useEffect(() => {
+    showHighlightRef.current = showHighlight;
+  }, [showHighlight]);
 
   const hasResult = variants.length > 0;
 
@@ -379,6 +390,50 @@ export default function Home() {
     setIcnsUrl(objectUrl);
   }, []);
 
+  const buildOutputs = useCallback(
+    async (image: HTMLImageElement, options: DrawVariantOptions) => {
+      const generated = ICON_VARIANTS.map((config) => {
+        const actualSize = config.size * config.scale;
+        const {
+          dataUrl: variantUrl,
+          binary,
+          downloadUrl,
+        } = drawVariant(image, actualSize, options);
+        return {
+          ...config,
+          actualSize,
+          dataUrl: variantUrl,
+          binary,
+          downloadUrl,
+        } satisfies VariantResult;
+      });
+
+      setVariants((previous) => {
+        cleanupVariantUrls(previous);
+        return generated;
+      });
+
+      const zip = new JSZip();
+      const folder = zip.folder("AppIcon.iconset");
+      if (!folder) {
+        throw new Error("Unable to create zip folder");
+      }
+      generated.forEach((variant) => {
+        folder.file(variant.filename, variant.binary, { binary: true });
+      });
+      folder.file("Contents.json", buildContentsJson(generated));
+      const zipBlob = await zip.generateAsync({ type: "blob" });
+      updateZipUrl(zipBlob);
+
+      const icnsBuffer = createIcnsBuffer(generated);
+      const icnsBlob = new Blob([icnsBuffer], {
+        type: "application/octet-stream",
+      });
+      updateIcnsUrl(icnsBlob);
+    },
+    [updateIcnsUrl, updateZipUrl],
+  );
+
   const processImage = useCallback(
     async (file: File) => {
       setIsProcessing(true);
@@ -388,6 +443,7 @@ export default function Home() {
         return [];
       });
       setSourcePreview(null);
+      sourceImageRef.current = null;
       revokeZipUrl();
       revokeIcnsUrl();
 
@@ -398,47 +454,13 @@ export default function Home() {
         const image = new window.Image();
         image.onload = async () => {
           try {
-            const generated = ICON_VARIANTS.map((config) => {
-              const actualSize = config.size * config.scale;
-              const {
-                dataUrl: variantUrl,
-                binary,
-                downloadUrl,
-              } = drawVariant(image, actualSize);
-              return {
-                ...config,
-                actualSize,
-                dataUrl: variantUrl,
-                binary,
-                downloadUrl,
-              } satisfies VariantResult;
-            });
-
+            sourceImageRef.current = image;
             setSourcePreview(dataUrl);
-            setVariants((previous) => {
-              cleanupVariantUrls(previous);
-              return generated;
-            });
             const name = file.name.replace(/\.[^/.]+$/, "");
             setBaseName(name.length > 0 ? name : "AppIcon");
-
-            const zip = new JSZip();
-            const folder = zip.folder("AppIcon.iconset");
-            if (!folder) {
-              throw new Error("Unable to create zip folder");
-            }
-            generated.forEach((variant) => {
-              folder.file(variant.filename, variant.binary, { binary: true });
+            await buildOutputs(image, {
+              showHighlight: showHighlightRef.current,
             });
-            folder.file("Contents.json", buildContentsJson(generated));
-            const zipBlob = await zip.generateAsync({ type: "blob" });
-            updateZipUrl(zipBlob);
-
-            const icnsBuffer = createIcnsBuffer(generated);
-            const icnsBlob = new Blob([icnsBuffer], {
-              type: "application/octet-stream",
-            });
-            updateIcnsUrl(icnsBlob);
           } catch (exception) {
             console.error(exception);
             setVariants((previous) => {
@@ -446,6 +468,7 @@ export default function Home() {
               return [];
             });
             setSourcePreview(null);
+            sourceImageRef.current = null;
             revokeZipUrl();
             revokeIcnsUrl();
             setError(
@@ -470,7 +493,29 @@ export default function Home() {
 
       reader.readAsDataURL(file);
     },
-    [revokeIcnsUrl, revokeZipUrl, updateIcnsUrl, updateZipUrl],
+    [buildOutputs, revokeIcnsUrl, revokeZipUrl],
+  );
+
+  const handleToggleHighlight = useCallback(
+    async (next: boolean) => {
+      setShowHighlight(next);
+      const image = sourceImageRef.current;
+      if (!image) {
+        return;
+      }
+      setIsProcessing(true);
+      try {
+        await buildOutputs(image, { showHighlight: next });
+      } catch (exception) {
+        console.error(exception);
+        setError(
+          "Something went wrong while regenerating icons. Please try again.",
+        );
+      } finally {
+        setIsProcessing(false);
+      }
+    },
+    [buildOutputs],
   );
 
   const triggerDownload = useCallback((url: string, filename: string) => {
@@ -643,6 +688,45 @@ export default function Home() {
                     <p>Status: {isProcessing ? "Processing" : "Ready"}</p>
                   </div>
                 </div>
+              </div>
+            ) : null}
+
+            {sourcePreview ? (
+              <div className="space-y-3 rounded-2xl border border-gray-200 bg-white/70 p-4 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/10">
+                <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+                  Style options
+                </p>
+                <label
+                  htmlFor="toggle-highlight"
+                  className={`flex items-start gap-3 ${
+                    isProcessing ? "cursor-wait opacity-70" : "cursor-pointer"
+                  }`}
+                >
+                  <span className="relative mt-0.5 inline-flex h-5 w-9 flex-shrink-0 items-center">
+                    <input
+                      id="toggle-highlight"
+                      type="checkbox"
+                      className="peer sr-only"
+                      checked={showHighlight}
+                      disabled={isProcessing}
+                      onChange={(event) =>
+                        handleToggleHighlight(event.target.checked)
+                      }
+                      data-tianji-event="toggle-highlight"
+                    />
+                    <span className="h-5 w-9 rounded-full bg-gray-300 transition-colors peer-checked:bg-indigo-500 peer-disabled:opacity-60 dark:bg-white/15 dark:peer-checked:bg-indigo-500/80" />
+                    <span className="absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform peer-checked:translate-x-4" />
+                  </span>
+                  <span className="flex flex-col gap-0.5">
+                    <span className="text-sm font-medium text-gray-800 dark:text-gray-100">
+                      Glossy highlight overlay
+                    </span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                      Adds a subtle top-to-bottom gloss in the classic MacOS
+                      style.
+                    </span>
+                  </span>
+                </label>
               </div>
             ) : null}
 
